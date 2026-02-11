@@ -1,0 +1,41 @@
+from fastapi import FastAPI, HTTPException
+
+app = FastAPI()
+
+expenses = []
+
+
+@app.post("/expenses", status_code=201)
+def create_expense(expense: dict):
+    expense["id"] = len(expenses) + 1
+    expenses.append(expense)
+    return expense
+
+
+@app.get("/expenses", status_code=200)
+def get_expenses():
+    return expenses
+
+
+@app.get("/expenses/{expense_id}", status_code=200)
+def get_expense(expense_id: int):
+    for e in expenses:
+        if e["id"] == expense_id:
+            return e
+    raise HTTPException(status_code=404, detail="Expense not found")
+
+
+@app.put("/expenses/{expense_id}", status_code=200)
+def update_expense(expense_id: int, data: dict):
+    for e in expenses:
+        if e["id"] == expense_id:
+            e.update(data)
+            return e
+    raise HTTPException(status_code=404, detail="Expense not found")
+
+
+@app.delete("/expenses/{expense_id}", status_code=204)
+def delete_expense(expense_id: int):
+    global expenses
+    expenses = [e for e in expenses if e["id"] != expense_id]
+    return
